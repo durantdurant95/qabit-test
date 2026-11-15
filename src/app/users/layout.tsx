@@ -3,7 +3,7 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { cache, Suspense } from "react";
 
 import { AppSidebar, AppSidebarSkeleton } from "@/components/app-sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -31,7 +31,7 @@ export default function UsersLayout({ children }: LayoutProps<"/users">) {
             className="mr-2 data-vertical:h-4 data-vertical:self-auto"
           />
           <Suspense fallback={<Skeleton className="h-4 w-24" />}>
-            <UsersBreadcrumb />
+            <PrefetchedBreadcrumb />
           </Suspense>
         </header>
         {children}
@@ -40,8 +40,11 @@ export default function UsersLayout({ children }: LayoutProps<"/users">) {
   );
 }
 
-async function PrefetchedSidebar() {
-  // A new client per request, so cached data is never shared between users.
+/**
+ * Prefetches the users list once per request. `cache` is scoped to the
+ * request, so the client and its data are never shared between users.
+ */
+const getUsersState = cache(async () => {
   const queryClient = new QueryClient();
 
   await queryClient.prefetchQuery({
@@ -49,9 +52,27 @@ async function PrefetchedSidebar() {
     queryFn: () => getUsers(),
   });
 
+  return dehydrate(queryClient);
+});
+
+async function PrefetchedSidebar() {
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
+    <HydrationBoundary state={await getUsersState()}>
       <AppSidebar />
+    </HydrationBoundary>
+  );
+}
+
+/**
+ * The breadcrumb reads the same query. It needs its own boundary: if it
+ * rendered first without data, it would create an empty query, and the
+ * sidebar's boundary would only fill it in an effect, after the server has
+ * already rendered the sidebar as loading.
+ */
+async function PrefetchedBreadcrumb() {
+  return (
+    <HydrationBoundary state={await getUsersState()}>
+      <UsersBreadcrumb />
     </HydrationBoundary>
   );
 }

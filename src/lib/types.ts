@@ -27,3 +27,9 @@ export type Post = {
 };
 
 export type NewPost = Pick<Post, "userId" | "title" | "body">;
+
+/**
+ * A post created in this session. The API always answers with `id: 101`,
+ * so it gets a client-generated id instead.
+ */
+export type CreatedPost = Omit<Post, "id"> & { id: string };
