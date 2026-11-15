@@ -1,18 +1,21 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Figtree, Geist_Mono, Instrument_Serif } from "next/font/google";
+
 import { Toaster } from "@/components/ui/sonner";
+import { cn } from "@/lib/utils";
 
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geist = Geist({
+const figtree = Figtree({
   variable: "--font-sans",
   subsets: ["latin"],
 });
 
-const display = Bricolage_Grotesque({
-  variable: "--font-display",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-heading",
   subsets: ["latin"],
+  weight: ["400"],
 });
 
 const geistMono = Geist_Mono({
@@ -29,7 +32,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geist.variable} ${display.variable} ${geistMono.variable} h-full antialiased`}
+      className={cn(
+        "h-full font-sans antialiased",
+        figtree.variable,
+        instrumentSerif.variable,
+        geistMono.variable,
+      )}
     >
       <body className="flex min-h-full flex-col">
         <Providers>{children}</Providers>
