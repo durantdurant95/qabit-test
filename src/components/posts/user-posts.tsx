@@ -2,12 +2,21 @@
 
 import { AlertCircleIcon } from "lucide-react";
 
+import { NewPostForm } from "@/components/posts/new-post-form";
 import { PostList } from "@/components/posts/post-list";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/user-avatar";
+import { useCreatedPosts, useCreatePost } from "@/hooks/use-create-post";
 import { usePosts } from "@/hooks/use-posts";
 import { useUser } from "@/hooks/use-users";
 import type { User } from "@/lib/types";
@@ -22,11 +31,31 @@ export function UserPosts({ userId }: { userId: number }) {
     isFetching,
     refetch,
   } = usePosts(userId);
+  const createdPosts = useCreatedPosts(userId);
+  const createPost = useCreatePost(userId);
   const isLoading = isPending || (isError && isFetching);
+  const allPosts = posts ? [...createdPosts, ...posts] : createdPosts;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
       {user ? <UserHeader user={user} /> : <UserHeaderSkeleton />}
+
+      <Card>
+        <CardHeader>
+          <CardTitle>
+            <h2 className="text-base">Write a post</h2>
+          </CardTitle>
+          <CardDescription>
+            It shows up at the top of the list once it&apos;s published.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <NewPostForm
+            onSubmit={createPost.mutateAsync}
+            error={createPost.error}
+          />
+        </CardContent>
+      </Card>
 
       <section aria-labelledby="posts-heading" className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
@@ -35,7 +64,7 @@ export function UserPosts({ userId }: { userId: number }) {
           </h2>
           {posts && !isLoading && (
             <Badge variant="secondary" className="tabular-nums">
-              {posts.length}
+              {allPosts.length}
             </Badge>
           )}
         </div>
@@ -59,7 +88,7 @@ export function UserPosts({ userId }: { userId: number }) {
             </AlertDescription>
           </Alert>
         ) : (
-          <PostList posts={posts} />
+          <PostList posts={allPosts} />
         )}
       </section>
     </div>

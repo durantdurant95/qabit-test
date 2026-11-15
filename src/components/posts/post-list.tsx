@@ -1,9 +1,21 @@
 import { FileTextIcon } from "lucide-react";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Post } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import type { CreatedPost, Post } from "@/lib/types";
 
-export function PostList({ posts }: { posts: Post[] }) {
+/** Created posts carry a client-generated string id. */
+function isCreated(post: Post | CreatedPost): post is CreatedPost {
+  return typeof post.id === "string";
+}
+
+export function PostList({ posts }: { posts: Array<Post | CreatedPost> }) {
   if (posts.length === 0) {
     return (
       <div
@@ -25,6 +37,11 @@ export function PostList({ posts }: { posts: Post[] }) {
               <CardTitle className="text-base first-letter:uppercase">
                 {post.title}
               </CardTitle>
+              {isCreated(post) && (
+                <CardAction>
+                  <Badge>New</Badge>
+                </CardAction>
+              )}
             </CardHeader>
             <CardContent>
               <p className="text-sm whitespace-pre-line text-muted-foreground first-letter:uppercase">
