@@ -21,6 +21,7 @@ import {
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarRail,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { BrandMark, UserAvatar } from "@/components/user-avatar";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
@@ -42,6 +43,11 @@ function isEditable(target: EventTarget | null) {
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const { isMobile, setOpenMobile } = useSidebar();
+  // On mobile the sidebar is a sheet; close it once a link is followed.
+  const closeOnMobile = () => {
+    if (isMobile) setOpenMobile(false);
+  };
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
 
@@ -81,7 +87,7 @@ export function AppSidebar() {
 
   return (
     <Sidebar variant="inset">
-      <BrandHeader href={withSearch("/users", q)} />
+      <BrandHeader href={withSearch("/users", q)} onNavigate={closeOnMobile} />
       <SidebarContent>
         <SidebarGroup className="pb-0">
           <form role="search" onSubmit={(event) => event.preventDefault()}>
@@ -117,6 +123,11 @@ export function AppSidebar() {
             )}
           </SidebarGroupLabel>
           <SidebarGroupContent>
+            <p role="status" className="sr-only">
+              {q && users && !isLoading && !isError
+                ? `${users.length} ${users.length === 1 ? "person" : "people"} found`
+                : ""}
+            </p>
             {isLoading ? (
               <UserMenuSkeleton />
             ) : isError ? (
@@ -136,10 +147,7 @@ export function AppSidebar() {
                 </AlertDescription>
               </Alert>
             ) : users.length === 0 ? (
-              <div
-                role="status"
-                className="flex flex-col items-center gap-2 rounded-md border border-dashed px-4 py-6 text-center"
-              >
+              <div className="flex flex-col items-center gap-2 rounded-md border border-dashed px-4 py-6 text-center">
                 <SearchXIcon
                   className="size-5 text-muted-foreground"
                   aria-hidden
@@ -173,7 +181,10 @@ export function AppSidebar() {
                         }
                         className="h-12 gap-3 px-2 data-active:bg-sidebar-primary data-active:font-normal data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground"
                       >
-                        <Link href={withSearch(href, q)}>
+                        <Link
+                          href={withSearch(href, q)}
+                          onClick={closeOnMobile}
+                        >
                           <UserAvatar id={user.id} name={user.name} />
                           <span className="grid min-w-0 flex-1 leading-tight">
                             <span className="truncate font-medium">
@@ -199,7 +210,13 @@ export function AppSidebar() {
 }
 
 /** Same height as the top bar, so both rows line up. */
-function BrandHeader({ href }: { href?: string }) {
+function BrandHeader({
+  href,
+  onNavigate,
+}: {
+  href?: string;
+  onNavigate?: () => void;
+}) {
   const content = (
     <>
       <BrandMark />
@@ -224,7 +241,9 @@ function BrandHeader({ href }: { href?: string }) {
               size="lg"
               className="h-12 px-2 hover:bg-transparent active:bg-transparent"
             >
-              <Link href={href}>{content}</Link>
+              <Link href={href} onClick={onNavigate}>
+                {content}
+              </Link>
             </SidebarMenuButton>
           ) : (
             <div className="flex h-12 items-center gap-2 px-2">{content}</div>

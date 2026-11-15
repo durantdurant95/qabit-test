@@ -3,19 +3,41 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import { UserPosts } from "@/components/posts/user-posts";
 import { getPostsByUser, getUser } from "@/lib/api";
 import { queryKeys } from "@/lib/query-keys";
 
+function parseUserId(rawId: string) {
+  const userId = Number(rawId);
+  return Number.isInteger(userId) && userId > 0 ? userId : null;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps<"/users/[userId]">): Promise<Metadata> {
+  const userId = parseUserId((await params).userId);
+  // fetch is memoized per request, so this shares the page's request.
+  const user = userId ? await getUser(userId).catch(() => null) : null;
+
+  if (!user) {
+    return { title: "User not found" };
+  }
+
+  return {
+    title: user.name,
+    description: `Posts by ${user.name} (@${user.username}).`,
+  };
+}
+
 export default async function UserPage({
   params,
 }: PageProps<"/users/[userId]">) {
-  const { userId: rawId } = await params;
-  const userId = Number(rawId);
+  const userId = parseUserId((await params).userId);
 
-  if (!Number.isInteger(userId) || userId <= 0) {
+  if (!userId) {
     notFound();
   }
 

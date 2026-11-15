@@ -20,10 +20,16 @@ import { queryKeys } from "@/lib/query-keys";
 export default function UsersLayout({ children }: LayoutProps<"/users">) {
   return (
     <SidebarProvider>
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:shadow-md focus:ring-3 focus:ring-ring/50 focus:outline-none"
+      >
+        Skip to content
+      </a>
       <Suspense fallback={<AppSidebarSkeleton />}>
         <PrefetchedSidebar />
       </Suspense>
-      <SidebarInset>
+      <SidebarInset id="main-content" tabIndex={-1} className="outline-none">
         <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b bg-background/80 px-4 backdrop-blur-md md:rounded-t-xl">
           <SidebarTrigger className="-ml-1" />
           <Separator
