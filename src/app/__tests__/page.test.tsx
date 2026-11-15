@@ -1,15 +1,15 @@
 import { render, screen } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 
-import Home from "@/app/page";
+import UsersPage from "@/app/users/page";
 import { server } from "@/test/msw/server";
 
 describe("smoke", () => {
-  it("renders the home page heading", () => {
-    render(<Home />);
+  it("renders the users empty state", () => {
+    render(<UsersPage />);
 
     expect(
-      screen.getByRole("heading", { name: "Users & Posts" }),
+      screen.getByRole("heading", { name: "Select a user" }),
     ).toBeInTheDocument();
   });
 
