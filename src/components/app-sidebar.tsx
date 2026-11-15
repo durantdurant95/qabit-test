@@ -1,12 +1,13 @@
 "use client";
 
-import { AlertCircleIcon, SearchIcon } from "lucide-react";
+import { AlertCircleIcon, SearchIcon, SearchXIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import {
   Sidebar,
   SidebarContent,
@@ -21,6 +22,7 @@ import {
   SidebarMenuSkeleton,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { BrandMark, UserAvatar } from "@/components/user-avatar";
 import { useDebouncedValue } from "@/hooks/use-debounced-value";
 import { useUsers } from "@/hooks/use-users";
 
@@ -29,12 +31,21 @@ function withSearch(href: string, q: string) {
   return q ? `${href}?${new URLSearchParams({ q })}` : href;
 }
 
+function isEditable(target: EventTarget | null) {
+  return (
+    target instanceof HTMLElement &&
+    (target.isContentEditable ||
+      /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName))
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
   const q = searchParams.get("q") ?? "";
 
+  const searchRef = useRef<HTMLInputElement>(null);
   const [search, setSearch] = useState(q);
   const debouncedSearch = useDebouncedValue(search.trim(), 300);
 
@@ -53,52 +64,67 @@ export function AppSidebar() {
     });
   }, [debouncedSearch, q, pathname, router, searchParams]);
 
+  // Press "/" anywhere to jump to the search box.
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "/" || isEditable(event.target)) return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   const { data: users, isPending, isError, isFetching, refetch } = useUsers(q);
   // Also show the skeleton while retrying after an error.
   const isLoading = isPending || (isError && isFetching);
 
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <Link
-          href={withSearch("/users", q)}
-          className="px-2 py-1 text-sm font-semibold"
-        >
-          Users &amp; Posts
-        </Link>
-        <form role="search" onSubmit={(event) => event.preventDefault()}>
-          <label htmlFor="user-search" className="sr-only">
-            Search users by name
-          </label>
-          <div className="relative">
-            <SearchIcon
-              className="pointer-events-none absolute top-1/2 left-2 size-4 -translate-y-1/2 text-muted-foreground"
-              aria-hidden
-            />
-            <SidebarInput
-              id="user-search"
-              type="search"
-              placeholder="Search by name..."
-              autoComplete="off"
-              className="pl-8"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-            />
-          </div>
-        </form>
-      </SidebarHeader>
+    <Sidebar variant="inset">
+      <BrandHeader href={withSearch("/users", q)} />
       <SidebarContent>
+        <SidebarGroup className="pb-0">
+          <form role="search" onSubmit={(event) => event.preventDefault()}>
+            <label htmlFor="user-search" className="sr-only">
+              Search people by name
+            </label>
+            <div className="relative">
+              <SearchIcon
+                className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                aria-hidden
+              />
+              <SidebarInput
+                ref={searchRef}
+                id="user-search"
+                type="search"
+                placeholder="Search by name"
+                autoComplete="off"
+                className="h-9 rounded-lg pr-9 pl-8 [&::-webkit-search-cancel-button]:hidden"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+              />
+              <Kbd className="absolute top-1/2 right-2 hidden -translate-y-1/2 bg-sidebar md:inline-flex">
+                /
+              </Kbd>
+            </div>
+          </form>
+        </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Users</SidebarGroupLabel>
+          <SidebarGroupLabel>
+            People
+            {users && !isLoading && !isError && (
+              <span className="ml-auto tabular-nums">{users.length}</span>
+            )}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             {isLoading ? (
               <UserMenuSkeleton />
             ) : isError ? (
               <Alert variant="destructive" role="alert">
                 <AlertCircleIcon />
-                <AlertTitle>Couldn&apos;t load users</AlertTitle>
+                <AlertTitle>Couldn&apos;t load people</AlertTitle>
                 <AlertDescription>
-                  <p>Check your connection and try again.</p>
+                  <p>Check your connection, then try again.</p>
                   <Button
                     size="sm"
                     variant="outline"
@@ -110,14 +136,30 @@ export function AppSidebar() {
                 </AlertDescription>
               </Alert>
             ) : users.length === 0 ? (
-              <p
+              <div
                 role="status"
-                className="px-2 py-4 text-sm text-muted-foreground"
+                className="flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-6 text-center"
               >
-                No users match &ldquo;{q}&rdquo;.
-              </p>
+                <SearchXIcon
+                  className="size-5 text-muted-foreground"
+                  aria-hidden
+                />
+                <p className="text-sm text-muted-foreground">
+                  No one matches &ldquo;{q}&rdquo;.
+                </p>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setSearch("");
+                    searchRef.current?.focus();
+                  }}
+                >
+                  Clear search
+                </Button>
+              </div>
             ) : (
-              <SidebarMenu>
+              <SidebarMenu className="gap-0.5">
                 {users.map((user) => {
                   const href = `/users/${user.id}`;
 
@@ -125,11 +167,27 @@ export function AppSidebar() {
                     <SidebarMenuItem key={user.id}>
                       <SidebarMenuButton
                         asChild
+                        size="lg"
                         isActive={
                           pathname === href || pathname.startsWith(`${href}/`)
                         }
+                        className="h-11 gap-3 rounded-lg px-2 hover:bg-sidebar-accent/70 data-active:bg-sidebar-accent data-active:font-normal data-active:shadow-sm data-active:ring-1 data-active:ring-sidebar-border"
                       >
-                        <Link href={withSearch(href, q)}>{user.name}</Link>
+                        <Link href={withSearch(href, q)}>
+                          <UserAvatar
+                            id={user.id}
+                            name={user.name}
+                            className="transition-shadow group-data-[active=true]/menu-button:ring-2 group-data-[active=true]/menu-button:ring-primary/50 group-data-[active=true]/menu-button:ring-offset-2 group-data-[active=true]/menu-button:ring-offset-sidebar-accent"
+                          />
+                          <span className="grid min-w-0 flex-1 leading-tight">
+                            <span className="truncate font-medium">
+                              {user.name}
+                            </span>
+                            <span className="truncate text-xs text-muted-foreground">
+                              @{user.username}
+                            </span>
+                          </span>
+                        </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
@@ -144,24 +202,60 @@ export function AppSidebar() {
   );
 }
 
+/** Same height as the top bar, so both rows line up. */
+function BrandHeader({ href }: { href?: string }) {
+  const content = (
+    <>
+      <BrandMark />
+      <span className="grid flex-1 text-left leading-tight">
+        <span className="truncate font-heading text-[0.95rem] font-semibold tracking-tight">
+          Users &amp; Posts
+        </span>
+        <span className="truncate text-xs text-muted-foreground">
+          Read and write posts
+        </span>
+      </span>
+    </>
+  );
+
+  return (
+    <SidebarHeader>
+      <SidebarMenu>
+        <SidebarMenuItem>
+          {href ? (
+            <SidebarMenuButton
+              asChild
+              size="lg"
+              className="hover:bg-transparent active:bg-transparent"
+            >
+              <Link href={href}>{content}</Link>
+            </SidebarMenuButton>
+          ) : (
+            <div className="flex h-12 items-center gap-2 p-2">{content}</div>
+          )}
+        </SidebarMenuItem>
+      </SidebarMenu>
+    </SidebarHeader>
+  );
+}
+
 /** Shown while the users list is prefetched on the server. */
 export function AppSidebarSkeleton() {
   return (
-    <Sidebar>
-      <SidebarHeader>
-        <span className="px-2 py-1 text-sm font-semibold">
-          Users &amp; Posts
-        </span>
-        <SidebarInput
-          type="search"
-          placeholder="Search by name..."
-          aria-label="Search users by name"
-          disabled
-        />
-      </SidebarHeader>
+    <Sidebar variant="inset">
+      <BrandHeader />
       <SidebarContent>
+        <SidebarGroup className="pb-0">
+          <SidebarInput
+            type="search"
+            placeholder="Search by name"
+            aria-label="Search people by name"
+            className="h-9 rounded-lg"
+            disabled
+          />
+        </SidebarGroup>
         <SidebarGroup>
-          <SidebarGroupLabel>Users</SidebarGroupLabel>
+          <SidebarGroupLabel>People</SidebarGroupLabel>
           <SidebarGroupContent>
             <UserMenuSkeleton />
           </SidebarGroupContent>
@@ -185,10 +279,18 @@ const SKELETON_WIDTHS = [
 
 function UserMenuSkeleton() {
   return (
-    <SidebarMenu aria-busy="true" aria-label="Loading users">
+    <SidebarMenu
+      aria-busy="true"
+      aria-label="Loading people"
+      className="gap-0.5"
+    >
       {SKELETON_WIDTHS.map((width, index) => (
         <SidebarMenuItem key={index}>
-          <SidebarMenuSkeleton width={width} />
+          <SidebarMenuSkeleton
+            showIcon
+            width={width}
+            className="h-11 gap-3 [&_[data-sidebar=menu-skeleton-icon]]:size-8 [&_[data-sidebar=menu-skeleton-icon]]:rounded-full"
+          />
         </SidebarMenuItem>
       ))}
     </SidebarMenu>
