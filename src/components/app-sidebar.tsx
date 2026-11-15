@@ -138,7 +138,7 @@ export function AppSidebar() {
             ) : users.length === 0 ? (
               <div
                 role="status"
-                className="flex flex-col items-center gap-2 rounded-2xl border border-dashed px-4 py-6 text-center"
+                className="flex flex-col items-center gap-2 rounded-md border border-dashed px-4 py-6 text-center"
               >
                 <SearchXIcon
                   className="size-5 text-muted-foreground"
@@ -171,7 +171,7 @@ export function AppSidebar() {
                         isActive={
                           pathname === href || pathname.startsWith(`${href}/`)
                         }
-                        className="h-12 gap-3 rounded-xl px-2 data-active:bg-sidebar-primary data-active:font-normal data-active:text-sidebar-primary-foreground data-active:shadow-md data-active:shadow-sidebar-primary/25 data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground"
+                        className="h-12 gap-3 px-2 data-active:bg-sidebar-primary data-active:font-normal data-active:text-sidebar-primary-foreground data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground"
                       >
                         <Link href={withSearch(href, q)}>
                           <UserAvatar id={user.id} name={user.name} />
@@ -204,7 +204,7 @@ function BrandHeader({ href }: { href?: string }) {
     <>
       <BrandMark />
       <span className="grid flex-1 text-left leading-tight">
-        <span className="truncate font-heading text-xl leading-none">
+        <span className="truncate text-sm font-semibold tracking-tight">
           Users &amp; Posts
         </span>
         <span className="truncate text-xs text-muted-foreground">

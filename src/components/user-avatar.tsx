@@ -50,7 +50,7 @@ export function BrandMark({ className }: { className?: string }) {
     <div
       aria-hidden
       className={cn(
-        "flex aspect-square size-8 items-center justify-center rounded-lg bg-linear-to-br from-sidebar-primary to-[oklch(0.55_0.24_320)] text-primary-foreground shadow-md shadow-primary/30",
+        "flex aspect-square size-8 items-center justify-center rounded-md bg-primary text-primary-foreground",
         className,
       )}
     >
