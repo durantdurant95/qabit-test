@@ -114,6 +114,20 @@ function UserHeader({ user }: { user: User }) {
   );
 }
 
+/** Shown while navigating to a user, before the server prefetch resolves. */
+export function UserPostsSkeleton() {
+  return (
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
+      <UserHeaderSkeleton />
+      <Skeleton className="h-64 w-full rounded-xl" />
+      <div className="flex flex-col gap-4">
+        <Skeleton className="h-6 w-24" />
+        <PostListSkeleton />
+      </div>
+    </div>
+  );
+}
+
 function UserHeaderSkeleton() {
   return (
     <div className="flex items-center gap-4">
@@ -126,7 +140,7 @@ function UserHeaderSkeleton() {
   );
 }
 
-export function PostListSkeleton() {
+function PostListSkeleton() {
   return (
     <ul
       aria-busy="true"
