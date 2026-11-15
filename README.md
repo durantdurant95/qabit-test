@@ -72,4 +72,8 @@ Four things that weren't obvious at first:
 
 ## Time spent
 
-_TODO: fill in._
+About 2.5 hours.
+
+## AI usage
+
+I used Claude to help with the more tedious parts of the work: writing the plan, drafting pull requests and writing tests. I reviewed and tested all the code it produced before committing it.
