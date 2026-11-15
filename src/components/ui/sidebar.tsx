@@ -583,13 +583,16 @@ function SidebarMenuBadge({
 function SidebarMenuSkeleton({
   className,
   showIcon = false,
+  width: fixedWidth,
   ...props
 }: React.ComponentProps<"div"> & {
   showIcon?: boolean;
+  /** Fixed width, e.g. "70%". Needed when the skeleton is prerendered. */
+  width?: string;
 }) {
-  // Random width between 50 to 90%.
+  // Random width between 50 to 90%, unless a fixed width is given.
   const [width] = React.useState(() => {
-    return `${Math.floor(Math.random() * 40) + 50}%`;
+    return fixedWidth ?? `${Math.floor(Math.random() * 40) + 50}%`;
   });
 
   return (
