@@ -90,7 +90,7 @@ export function AppSidebar() {
             </label>
             <div className="relative">
               <SearchIcon
-                className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground"
+                className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
                 aria-hidden
               />
               <SidebarInput
@@ -99,11 +99,11 @@ export function AppSidebar() {
                 type="search"
                 placeholder="Search by name"
                 autoComplete="off"
-                className="h-9 rounded-lg pr-9 pl-8 [&::-webkit-search-cancel-button]:hidden"
+                className="pr-10 pl-9 [&::-webkit-search-cancel-button]:hidden"
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
               />
-              <Kbd className="absolute top-1/2 right-2 hidden -translate-y-1/2 bg-sidebar md:inline-flex">
+              <Kbd className="absolute top-1/2 right-2.5 hidden -translate-y-1/2 bg-sidebar md:inline-flex">
                 /
               </Kbd>
             </div>
@@ -138,7 +138,7 @@ export function AppSidebar() {
             ) : users.length === 0 ? (
               <div
                 role="status"
-                className="flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-6 text-center"
+                className="flex flex-col items-center gap-2 rounded-2xl border border-dashed px-4 py-6 text-center"
               >
                 <SearchXIcon
                   className="size-5 text-muted-foreground"
@@ -159,7 +159,7 @@ export function AppSidebar() {
                 </Button>
               </div>
             ) : (
-              <SidebarMenu className="gap-0.5">
+              <SidebarMenu>
                 {users.map((user) => {
                   const href = `/users/${user.id}`;
 
@@ -171,19 +171,15 @@ export function AppSidebar() {
                         isActive={
                           pathname === href || pathname.startsWith(`${href}/`)
                         }
-                        className="h-11 gap-3 rounded-lg px-2 hover:bg-sidebar-accent/70 data-active:bg-sidebar-accent data-active:font-normal data-active:shadow-sm data-active:ring-1 data-active:ring-sidebar-border"
+                        className="h-12 gap-3 rounded-xl px-2 data-active:bg-sidebar-primary data-active:font-normal data-active:text-sidebar-primary-foreground data-active:shadow-md data-active:shadow-sidebar-primary/25 data-active:hover:bg-sidebar-primary data-active:hover:text-sidebar-primary-foreground"
                       >
                         <Link href={withSearch(href, q)}>
-                          <UserAvatar
-                            id={user.id}
-                            name={user.name}
-                            className="transition-shadow group-data-[active=true]/menu-button:ring-2 group-data-[active=true]/menu-button:ring-primary/50 group-data-[active=true]/menu-button:ring-offset-2 group-data-[active=true]/menu-button:ring-offset-sidebar-accent"
-                          />
+                          <UserAvatar id={user.id} name={user.name} />
                           <span className="grid min-w-0 flex-1 leading-tight">
                             <span className="truncate font-medium">
                               {user.name}
                             </span>
-                            <span className="truncate text-xs text-muted-foreground">
+                            <span className="truncate text-xs text-muted-foreground group-data-[active=true]/menu-button:text-sidebar-primary-foreground/75">
                               @{user.username}
                             </span>
                           </span>
@@ -208,7 +204,7 @@ function BrandHeader({ href }: { href?: string }) {
     <>
       <BrandMark />
       <span className="grid flex-1 text-left leading-tight">
-        <span className="truncate font-heading text-[0.95rem] font-semibold tracking-tight">
+        <span className="truncate font-heading text-xl leading-none">
           Users &amp; Posts
         </span>
         <span className="truncate text-xs text-muted-foreground">
@@ -226,12 +222,12 @@ function BrandHeader({ href }: { href?: string }) {
             <SidebarMenuButton
               asChild
               size="lg"
-              className="hover:bg-transparent active:bg-transparent"
+              className="h-12 px-2 hover:bg-transparent active:bg-transparent"
             >
               <Link href={href}>{content}</Link>
             </SidebarMenuButton>
           ) : (
-            <div className="flex h-12 items-center gap-2 p-2">{content}</div>
+            <div className="flex h-12 items-center gap-2 px-2">{content}</div>
           )}
         </SidebarMenuItem>
       </SidebarMenu>
@@ -250,7 +246,6 @@ export function AppSidebarSkeleton() {
             type="search"
             placeholder="Search by name"
             aria-label="Search people by name"
-            className="h-9 rounded-lg"
             disabled
           />
         </SidebarGroup>
@@ -279,17 +274,13 @@ const SKELETON_WIDTHS = [
 
 function UserMenuSkeleton() {
   return (
-    <SidebarMenu
-      aria-busy="true"
-      aria-label="Loading people"
-      className="gap-0.5"
-    >
+    <SidebarMenu aria-busy="true" aria-label="Loading people">
       {SKELETON_WIDTHS.map((width, index) => (
         <SidebarMenuItem key={index}>
           <SidebarMenuSkeleton
             showIcon
             width={width}
-            className="h-11 gap-3 [&_[data-sidebar=menu-skeleton-icon]]:size-8 [&_[data-sidebar=menu-skeleton-icon]]:rounded-full"
+            className="h-12 gap-3 px-2 [&_[data-sidebar=menu-skeleton-icon]]:size-8 [&_[data-sidebar=menu-skeleton-icon]]:rounded-full"
           />
         </SidebarMenuItem>
       ))}

@@ -32,11 +32,11 @@ export function UserAvatar({
   const hue = hueFor(id);
 
   return (
-    <Avatar size={size} className={className}>
+    <Avatar size={size} className={cn("after:hidden", className)}>
       <AvatarFallback
-        className="font-heading text-xs font-semibold text-white"
+        className="text-xs font-semibold tracking-wide text-white"
         style={{
-          backgroundImage: `linear-gradient(140deg, oklch(0.78 0.13 ${hue}), oklch(0.55 0.19 ${hue + 40}))`,
+          backgroundImage: `linear-gradient(140deg, oklch(0.8 0.12 ${hue}), oklch(0.58 0.18 ${hue + 40}))`,
         }}
       >
         {getInitials(name)}
@@ -50,7 +50,7 @@ export function BrandMark({ className }: { className?: string }) {
     <div
       aria-hidden
       className={cn(
-        "flex aspect-square size-8 items-center justify-center rounded-lg bg-linear-to-br from-[oklch(0.62_0.2_277)] to-[oklch(0.5_0.22_305)] text-white shadow-sm shadow-primary/30",
+        "flex aspect-square size-8 items-center justify-center rounded-lg bg-linear-to-br from-sidebar-primary to-[oklch(0.55_0.24_320)] text-primary-foreground shadow-md shadow-primary/30",
         className,
       )}
     >
