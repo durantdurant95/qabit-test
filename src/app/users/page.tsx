@@ -1,6 +1,11 @@
 import { MousePointerClickIcon } from "lucide-react";
+import type { Metadata } from "next";
 
 import { Kbd } from "@/components/ui/kbd";
+
+export const metadata: Metadata = {
+  title: "People",
+};
 
 export default function UsersPage() {
   return (

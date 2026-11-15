@@ -23,7 +23,11 @@ export function PostList({ posts }: { posts: Array<Post | CreatedPost> }) {
         className="flex flex-col items-center gap-2 rounded-lg border border-dashed px-4 py-10 text-center"
       >
         <FileTextIcon className="size-5 text-muted-foreground" aria-hidden />
-        <p className="text-sm text-muted-foreground">No posts yet.</p>
+        <p className="text-sm font-medium">No posts yet</p>
+        <p className="max-w-xs text-sm text-pretty text-muted-foreground">
+          This user hasn&apos;t written anything. Use &ldquo;New post&rdquo; to
+          add the first one.
+        </p>
       </div>
     );
   }

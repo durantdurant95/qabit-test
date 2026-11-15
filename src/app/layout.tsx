@@ -18,7 +18,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Users & Posts",
+  title: {
+    template: "%s · Users & Posts",
+    default: "Users & Posts",
+  },
   description: "Browse JSONPlaceholder users and their posts.",
 };
 
