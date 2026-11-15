@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertCircleIcon } from "lucide-react";
+import { AlertCircleIcon, PlusIcon } from "lucide-react";
+import { useState } from "react";
 
 import { NewPostForm } from "@/components/posts/new-post-form";
 import { PostList } from "@/components/posts/post-list";
@@ -8,12 +9,13 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/user-avatar";
 import { useCreatedPosts, useCreatePost } from "@/hooks/use-create-post";
@@ -32,30 +34,12 @@ export function UserPosts({ userId }: { userId: number }) {
     refetch,
   } = usePosts(userId);
   const createdPosts = useCreatedPosts(userId);
-  const createPost = useCreatePost(userId);
   const isLoading = isPending || (isError && isFetching);
   const allPosts = posts ? [...createdPosts, ...posts] : createdPosts;
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
       {user ? <UserHeader user={user} /> : <UserHeaderSkeleton />}
-
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <h2 className="text-base">Write a post</h2>
-          </CardTitle>
-          <CardDescription>
-            It shows up at the top of the list once it&apos;s published.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <NewPostForm
-            onSubmit={createPost.mutateAsync}
-            error={createPost.error}
-          />
-        </CardContent>
-      </Card>
 
       <section aria-labelledby="posts-heading" className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
@@ -67,6 +51,7 @@ export function UserPosts({ userId }: { userId: number }) {
               {allPosts.length}
             </Badge>
           )}
+          <NewPostDialog userId={userId} />
         </div>
 
         {isLoading ? (
@@ -95,6 +80,44 @@ export function UserPosts({ userId }: { userId: number }) {
   );
 }
 
+function NewPostDialog({ userId }: { userId: number }) {
+  const [open, setOpen] = useState(false);
+  const createPost = useCreatePost(userId);
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        // Start each time without the error from a previous attempt.
+        createPost.reset();
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button size="sm" className="ml-auto">
+          <PlusIcon aria-hidden />
+          New post
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Write a post</DialogTitle>
+          <DialogDescription>
+            It shows up at the top of the list once it&apos;s published.
+          </DialogDescription>
+        </DialogHeader>
+        <NewPostForm
+          onSubmit={async (values) => {
+            await createPost.mutateAsync(values);
+            setOpen(false);
+          }}
+          error={createPost.error}
+        />
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function UserHeader({ user }: { user: User }) {
   return (
     <header className="flex items-center gap-4">
@@ -119,9 +142,11 @@ export function UserPostsSkeleton() {
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 p-4 md:p-8">
       <UserHeaderSkeleton />
-      <Skeleton className="h-64 w-full rounded-xl" />
       <div className="flex flex-col gap-4">
-        <Skeleton className="h-6 w-24" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-8 w-24" />
+        </div>
         <PostListSkeleton />
       </div>
     </div>
