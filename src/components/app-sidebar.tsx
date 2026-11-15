@@ -1,10 +1,12 @@
 "use client";
 
-import { SearchIcon } from "lucide-react";
+import { AlertCircleIcon, SearchIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -51,7 +53,9 @@ export function AppSidebar() {
     });
   }, [debouncedSearch, q, pathname, router, searchParams]);
 
-  const { data: users = [] } = useUsers(q);
+  const { data: users, isPending, isError, isFetching, refetch } = useUsers(q);
+  // Also show the skeleton while retrying after an error.
+  const isLoading = isPending || (isError && isFetching);
 
   return (
     <Sidebar>
@@ -87,24 +91,51 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupLabel>Users</SidebarGroupLabel>
           <SidebarGroupContent>
-            <SidebarMenu>
-              {users.map((user) => {
-                const href = `/users/${user.id}`;
+            {isLoading ? (
+              <UserMenuSkeleton />
+            ) : isError ? (
+              <Alert variant="destructive" role="alert">
+                <AlertCircleIcon />
+                <AlertTitle>Couldn&apos;t load users</AlertTitle>
+                <AlertDescription>
+                  <p>Check your connection and try again.</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="mt-2"
+                    onClick={() => refetch()}
+                  >
+                    Retry
+                  </Button>
+                </AlertDescription>
+              </Alert>
+            ) : users.length === 0 ? (
+              <p
+                role="status"
+                className="px-2 py-4 text-sm text-muted-foreground"
+              >
+                No users match &ldquo;{q}&rdquo;.
+              </p>
+            ) : (
+              <SidebarMenu>
+                {users.map((user) => {
+                  const href = `/users/${user.id}`;
 
-                return (
-                  <SidebarMenuItem key={user.id}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={
-                        pathname === href || pathname.startsWith(`${href}/`)
-                      }
-                    >
-                      <Link href={withSearch(href, q)}>{user.name}</Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
+                  return (
+                    <SidebarMenuItem key={user.id}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={
+                          pathname === href || pathname.startsWith(`${href}/`)
+                        }
+                      >
+                        <Link href={withSearch(href, q)}>{user.name}</Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
