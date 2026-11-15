@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Figtree, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 
 import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
@@ -7,15 +7,9 @@ import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const figtree = Figtree({
+const geist = Geist({
   variable: "--font-sans",
   subsets: ["latin"],
-});
-
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["400"],
 });
 
 const geistMono = Geist_Mono({
@@ -34,8 +28,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={cn(
         "h-full font-sans antialiased",
-        figtree.variable,
-        instrumentSerif.variable,
+        geist.variable,
         geistMono.variable,
       )}
     >
